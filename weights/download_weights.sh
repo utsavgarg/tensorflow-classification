@@ -7,5 +7,8 @@ wget https://www.dropbox.com/s/zpeufcwesimhvua/vgg16.npy
 #download weights for googlenet
 wget https://www.dropbox.com/s/kzlgksuginkatb5/googlenet.npy
 
+#download weights for resnet-50
+wget https://www.dropbox.com/s/o8ay4gjdnu1ktds/resnet50.npy
+
 #download weights for resnet-152
 wget https://www.dropbox.com/s/8bzt5bfvkmz8xr9/resnet152.npy
