@@ -1,6 +1,7 @@
 from nets.vgg_f import vggf
 from nets.vgg_16 import vgg16
 from nets.googlenet import googlenet
+from nets.resnet_50 import resnet50
 from nets.resnet_152 import resnet152
 from misc.utils import img_preprocess
 import tensorflow as tf
@@ -8,7 +9,7 @@ import numpy as np
 import argparse
 
 def validate_arguments(args):
-    nets = ['vggf', 'vgg16', 'googlenet', 'resnet152']
+    nets = ['vggf', 'vgg16', 'googlenet', 'resnet50', 'resnet152']
     if not(args.network in nets):
         print ('invalid network')
         exit (-1)
@@ -26,6 +27,8 @@ def choose_net(network):
         return vgg16(input_image), input_image
     elif network == 'googlenet':
         return googlenet(input_image), input_image
+    elif network == 'resnet50':
+        return resnet50(input_image), input_image
     else:
         return resnet152(input_image), input_image
 
