@@ -1,5 +1,7 @@
 from nets.vgg_f import vggf
+from nets.caffenet import caffenet
 from nets.vgg_16 import vgg16
+from nets.vgg_19 import vgg19
 from nets.googlenet import googlenet
 from nets.resnet_50 import resnet50
 from nets.resnet_152 import resnet152
@@ -9,7 +11,7 @@ import numpy as np
 import argparse
 
 def validate_arguments(args):
-    nets = ['vggf', 'vgg16', 'googlenet', 'resnet50', 'resnet152']
+    nets = ['vggf', 'caffenet', 'vgg16', 'vgg19', 'googlenet', 'resnet50', 'resnet152']
     if not(args.network in nets):
         print ('invalid network')
         exit (-1)
@@ -19,12 +21,20 @@ def validate_arguments(args):
             exit (-1)
 
 def choose_net(network):
+    if network == 'caffenet':
+        size = 227
+    else:
+        size = 224
     #placeholder to pass image
-    input_image = tf.placeholder(shape=[None, 224, 224, 3],dtype='float32', name='input_image')
+    input_image = tf.placeholder(shape=[None, size, size, 3],dtype='float32', name='input_image')
     if network == 'vggf':
         return vggf(input_image), input_image
+    elif network == 'caffenet':
+        return caffenet(input_image), input_image
     elif network == 'vgg16':
         return vgg16(input_image), input_image
+    elif network == 'vgg19':
+        return vgg19(input_image), input_image
     elif network == 'googlenet':
         return googlenet(input_image), input_image
     elif network == 'resnet50':
@@ -32,7 +42,7 @@ def choose_net(network):
     else:
         return resnet152(input_image), input_image
 
-def evaluate(net, im_list, in_im, labels):
+def evaluate(net, im_list, in_im, labels, net_name):
     top_1 = 0
     top_5 = 0
     config = tf.ConfigProto(gpu_options=tf.GPUOptions(allow_growth=True))
@@ -41,7 +51,10 @@ def evaluate(net, im_list, in_im, labels):
     with tf.Session(config=config) as sess:
         sess.run(tf.global_variables_initializer())
         for i,name in enumerate(imgs):
-            im = img_preprocess(name.strip())
+            if net_name=='caffenet':
+                im = img_preprocess(name.strip(), size=227)
+            else:
+                im = img_preprocess(name.strip())
             softmax_scores = sess.run(net['prob'], feed_dict={in_im: im})
             inds = np.argsort(softmax_scores[0])[::-1][:5]
             if i!=0 and i%1000 == 0:
@@ -54,12 +67,15 @@ def evaluate(net, im_list, in_im, labels):
     print 'Top-1 Accuracy = {:.2f}'.format(top_1/500.0)
     print 'Top-5 Accuracy = {:.2f}'.format(top_5/500.0)
 
-def predict(net, im_path, in_im):
+def predict(net, im_path, in_im, net_name):
     synset = open('misc/ilsvrc_synsets.txt').readlines()
     config = tf.ConfigProto(gpu_options=tf.GPUOptions(allow_growth=True))
     with tf.Session(config=config) as sess:
         sess.run(tf.global_variables_initializer())
-        im = img_preprocess(im_path)
+        if net_name=='caffenet':
+                im = img_preprocess(im_path, size=227)
+            else:
+                im = img_preprocess(im_path)
         softmax_scores = sess.run(net['prob'], feed_dict={in_im: im})
         inds = np.argsort(softmax_scores[0])[::-1][:5]
         print '{:}\t{:}'.format('Score','Class')
@@ -77,9 +93,9 @@ def main():
     validate_arguments(args)
     net, inp_im  = choose_net(args.network)
     if args.evaluate:
-        evaluate(net, args.img_list, inp_im, args.gt_labels)
+        evaluate(net, args.img_list, inp_im, args.gt_labels, args.network)
     else:
-        predict(net, args.img_path, inp_im)
+        predict(net, args.img_path, inp_im, args.network)
 
 if __name__ == '__main__':
     main()
