@@ -3,8 +3,15 @@ wrapper functions for tensorflow layers
 '''
 import tensorflow as tf
 
-def conv_layer(bottom, weight, bias=None, s=1, padding='SAME', relu=True):
-    conv = tf.nn.conv2d(bottom, weight, [1, s, s, 1], padding=padding)
+def conv_layer(bottom, weight, bias=None, s=1, padding='SAME', relu=True, group=1):
+    if group==1:
+        conv = tf.nn.conv2d(bottom, weight, [1, s, s, 1], padding=padding)
+    else:
+        input_split = tf.split(bottom, group, 3)
+        weight_split = tf.split(weight, group, 3)
+        conv_1 = tf.nn.conv2d(input_split[0], weight_split[0], [1, s, s, 1], padding=padding)
+        conv_2 = tf.nn.conv2d(input_split[1], weight_split[1], [1, s, s, 1], padding=padding)
+        conv = tf.concat([conv_1, conv_2], 3)
     if bias is None:
         if relu:
             return tf.nn.relu(conv)
