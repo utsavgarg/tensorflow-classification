@@ -74,7 +74,7 @@ def predict(net, im_path, in_im, net_name):
         sess.run(tf.global_variables_initializer())
         if net_name=='caffenet':
                 im = img_preprocess(im_path, size=227)
-            else:
+        else:
                 im = img_preprocess(im_path)
         softmax_scores = sess.run(net['prob'], feed_dict={in_im: im})
         inds = np.argsort(softmax_scores[0])[::-1][:5]
