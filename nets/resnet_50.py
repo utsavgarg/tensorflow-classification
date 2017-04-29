@@ -8,7 +8,7 @@ def model(image, weights):
     layers = {}
     with tf.name_scope("conv1"):
         layers['conv1'] = conv_layer(image, weights['conv1']['weights'], weights['conv1']['biases'], s=2, relu=False)
-        layers['bn_conv1'] = tf.nn.relu(batch_norm(layers['conv1'], weights['bn_conv1']))
+        layers['bn_conv1'] = batch_norm(layers['conv1'], weights['bn_conv1'])
         layers['pool1'] = max_pool(layers['bn_conv1'], k=3, s=2)
 
     with tf.name_scope("res2"):

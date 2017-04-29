@@ -5,13 +5,14 @@ from nets.vgg_19 import vgg19
 from nets.googlenet import googlenet
 from nets.resnet_50 import resnet50
 from nets.resnet_152 import resnet152
-from misc.utils import img_preprocess
+from nets.inception_v3 import inceptionv3
+from misc.utils import *
 import tensorflow as tf
 import numpy as np
 import argparse
 
 def validate_arguments(args):
-    nets = ['vggf', 'caffenet', 'vgg16', 'vgg19', 'googlenet', 'resnet50', 'resnet152']
+    nets = ['vggf', 'caffenet', 'vgg16', 'vgg19', 'googlenet', 'resnet50', 'resnet152', 'inceptionv3']
     if not(args.network in nets):
         print ('invalid network')
         exit (-1)
@@ -23,6 +24,8 @@ def validate_arguments(args):
 def choose_net(network):
     if network == 'caffenet':
         size = 227
+    elif network == 'inceptionv3':
+        size = 299
     else:
         size = 224
     #placeholder to pass image
@@ -39,8 +42,10 @@ def choose_net(network):
         return googlenet(input_image), input_image
     elif network == 'resnet50':
         return resnet50(input_image), input_image
-    else:
+    elif network == 'resnet152':
         return resnet152(input_image), input_image
+    else:
+        return inceptionv3(input_image), input_image
 
 def evaluate(net, im_list, in_im, labels, net_name):
     top_1 = 0
@@ -52,6 +57,11 @@ def evaluate(net, im_list, in_im, labels, net_name):
         sess.run(tf.global_variables_initializer())
         for i,name in enumerate(imgs):
             if net_name=='caffenet':
+                im = img_preprocess('../universal_perturbation/data/ilsvrc_val/'+name.strip(), size=227)
+            elif net_name == 'inceptionv3':
+                im = v3_preprocess('../universal_perturbation/data/ilsvrc_val/'+name.strip())
+            else:
+                im = img_preprocess('../universal_perturbation/data/ilsvrc_val/'+name.strip())
                 im = img_preprocess(name.strip(), size=227)
             else:
                 im = img_preprocess(name.strip())
@@ -74,6 +84,8 @@ def predict(net, im_path, in_im, net_name):
         sess.run(tf.global_variables_initializer())
         if net_name=='caffenet':
                 im = img_preprocess(im_path, size=227)
+        elif net_name == 'inceptionv3':
+                im = v3_preprocess(im_path)
         else:
                 im = img_preprocess(im_path)
         softmax_scores = sess.run(net['prob'], feed_dict={in_im: im})

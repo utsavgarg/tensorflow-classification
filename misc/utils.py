@@ -15,3 +15,12 @@ def img_preprocess(img_path, size=224):
     img[:,:,[0,1,2]] = img[:,:,[2,1,0]]
     img = np.reshape(img,[1,size,size,3])
     return img
+
+def v3_preprocess(img_path):
+    img = imread(img_path)
+    img = resize(img, (299, 299), preserve_range=True)
+    img = (img - 128) / 128
+    if len(img.shape) == 2:
+        img = np.dstack([img,img,img])
+    img = np.reshape(img,[1,299,299,3])
+    return img

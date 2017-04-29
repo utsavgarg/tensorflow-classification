@@ -18,3 +18,6 @@ wget https://www.dropbox.com/s/o8ay4gjdnu1ktds/resnet50.npy
 
 #download weights for resnet-152
 wget https://www.dropbox.com/s/8bzt5bfvkmz8xr9/resnet152.npy
+
+#download weights for inception-v3
+wget https://github.com/fchollet/deep-learning-models/releases/download/v0.5/inception_v3_weights_tf_dim_ordering_tf_kernels.h5
