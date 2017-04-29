@@ -62,9 +62,6 @@ def evaluate(net, im_list, in_im, labels, net_name):
                 im = v3_preprocess(name.strip())
             else:
                 im = img_preprocess(name.strip())
-                im = img_preprocess(name.strip(), size=227)
-            else:
-                im = img_preprocess(name.strip())
             softmax_scores = sess.run(net['prob'], feed_dict={in_im: im})
             inds = np.argsort(softmax_scores[0])[::-1][:5]
             if i!=0 and i%1000 == 0:
