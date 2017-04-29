@@ -57,11 +57,11 @@ def evaluate(net, im_list, in_im, labels, net_name):
         sess.run(tf.global_variables_initializer())
         for i,name in enumerate(imgs):
             if net_name=='caffenet':
-                im = img_preprocess('../universal_perturbation/data/ilsvrc_val/'+name.strip(), size=227)
+                im = img_preprocess(name.strip(), size=227)
             elif net_name == 'inceptionv3':
-                im = v3_preprocess('../universal_perturbation/data/ilsvrc_val/'+name.strip())
+                im = v3_preprocess(name.strip())
             else:
-                im = img_preprocess('../universal_perturbation/data/ilsvrc_val/'+name.strip())
+                im = img_preprocess(name.strip())
                 im = img_preprocess(name.strip(), size=227)
             else:
                 im = img_preprocess(name.strip())
