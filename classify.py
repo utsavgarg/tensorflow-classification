@@ -21,31 +21,29 @@ def validate_arguments(args):
             print ('provide image list and labels')
             exit (-1)
 
-def choose_net(network):
+def choose_net(network):    
+    MAP = {
+        'vggf'     : vggf,
+        'caffenet' : caffenet,
+        'vgg16'    : vgg16,
+        'vgg19'    : vgg19, 
+        'googlenet': googlenet, 
+        'resnet50' : resnet50,
+        'resnet152': resnet152, 
+        'inceptionv3': inceptionv3,
+    }
+    
     if network == 'caffenet':
         size = 227
     elif network == 'inceptionv3':
         size = 299
     else:
         size = 224
+        
     #placeholder to pass image
     input_image = tf.placeholder(shape=[None, size, size, 3],dtype='float32', name='input_image')
-    if network == 'vggf':
-        return vggf(input_image), input_image
-    elif network == 'caffenet':
-        return caffenet(input_image), input_image
-    elif network == 'vgg16':
-        return vgg16(input_image), input_image
-    elif network == 'vgg19':
-        return vgg19(input_image), input_image
-    elif network == 'googlenet':
-        return googlenet(input_image), input_image
-    elif network == 'resnet50':
-        return resnet50(input_image), input_image
-    elif network == 'resnet152':
-        return resnet152(input_image), input_image
-    else:
-        return inceptionv3(input_image), input_image
+
+    return MAP[network](input_image), input_image
 
 def evaluate(net, im_list, in_im, labels, net_name):
     top_1 = 0
