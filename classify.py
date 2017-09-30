@@ -100,10 +100,6 @@ def main():
     parser.add_argument('--gt_labels', help='Path to the ground truth validation labels')
     parser.add_argument('--batch_size', default=50,  help='Batch size for evaluation code')
     args = parser.parse_args()
-    args.network = 'vgg16'
-    args.img_list = '/data1/data/imagenet/data/val_names_list.txt'
-    args.gt_labels = '/data1/data/imagenet/data/val_gt_list.txt' 
-    # args.evaluate = True
     validate_arguments(args)
     net, inp_im  = choose_net(args.network)
     if args.evaluate:
