@@ -17,13 +17,16 @@ Different neural network architechtures implemented in tensorflow for image clas
 ## Performance
 These converted models have the following performance on the ilsvrc validation set, with each image resized to 224x224 (227 or 299 depending on architechture), and per channel mean subtraction.
 
+
+* **post preprocessing update**. 
+
 | Network        | Top-1 Accuracy           | Top-5 Accuracy  |
 | ------------- |:-------------:| :-----:|
-| VGG-F      | 53.43% | 77.43% |
-| CaffeNet      | 56.02% | 79.42% |
-| VGG-16      | 65.77%      |   86.65% |
-| VGG-19      | 66.14%      |   86.97% |
-| GoogLeNet | 67.92%      |    88.29% |
-| ResNet-50 | 70.65% |    89.85% |
-| ResNet-152 | 72.64% |    90.92% |
+| VGG-F      | 58.33% | 80.75% |
+| CaffeNet      | 56.77% | 79.98% |
+| VGG-16      | 70.93%      |   89.82% |
+| VGG-19      | 71.02%      |   89.85% |
+| GoogLeNet | 68.69%      |    89.01% |
+| ResNet-50 | 74.71% |    92.00% |
+| ResNet-152 | 76.33% |    92.93% |
 | Inception-V3 | 76.85% |    93.39% |

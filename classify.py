@@ -10,6 +10,7 @@ from misc.utils import *
 import tensorflow as tf
 import numpy as np
 import argparse
+import time
 
 def validate_arguments(args):
     nets = ['vggf', 'caffenet', 'vgg16', 'vgg19', 'googlenet', 'resnet50', 'resnet152', 'inceptionv3']
@@ -45,44 +46,45 @@ def choose_net(network):
 
     return MAP[network](input_image), input_image
 
-def evaluate(net, im_list, in_im, labels, net_name):
+def evaluate(net, im_list, in_im, labels, net_name,batch_size=30):
     top_1 = 0
     top_5 = 0
     config = tf.ConfigProto(gpu_options=tf.GPUOptions(allow_growth=True))
-    imgs = open(im_list).readlines()
+    img_list = open(im_list).readlines()
     gt_labels = open(labels).readlines()
+    t_s = time.time()
+    isotropic,size = get_params(net_name)
+    batch_im = np.zeros((batch_size, size,size,3))
     with tf.Session(config=config) as sess:
         sess.run(tf.global_variables_initializer())
-        for i,name in enumerate(imgs):
-            if net_name=='caffenet':
-                im = img_preprocess(name.strip(), size=227)
-            elif net_name == 'inceptionv3':
-                im = v3_preprocess(name.strip())
-            else:
-                im = img_preprocess(name.strip())
-            softmax_scores = sess.run(net['prob'], feed_dict={in_im: im})
-            inds = np.argsort(softmax_scores[0])[::-1][:5]
-            if i!=0 and i%1000 == 0:
-                print 'iter: {:5d}\ttop-1: {:04.2f}\ttop-5: {:04.2f}'.format(i, (top_1/float(i))*100, (top_5)/float(i)*100)
-            if inds[0] == int(gt_labels[i].strip()):
-                top_1 += 1
-                top_5 += 1
-            elif int(gt_labels[i].strip()) in inds:
-                top_5 += 1
+        img_loader = loader_func(net_name,isotropic,size,sess)
+        for i in range(len(img_list)/batch_size):
+            lim = min(batch_size,len(img_list)-i*batch_size)
+            for j in range(lim):
+                im = img_loader(img_list[i*batch_size+j].strip())
+                batch_im[j] = np.copy(im)
+            gt = np.array([int(gt_labels[i*batch_size+j].strip()) for j in range(lim)])
+            softmax_scores = sess.run(net['prob'], feed_dict={in_im: batch_im})
+            inds = np.argsort(softmax_scores, axis=1)[:,::-1][:,:5]
+            if i!=0 and (i*batch_size+lim)%1000 == 0:
+                print 'iter: {:5d}\ttop-1: {:04.2f}\ttop-5: {:04.2f}'.format(i*batch_size+lim, (top_1/float(i*batch_size+lim))*100,
+                                                                             (top_5)/float(i*batch_size+lim)*100)
+            top_1+= np.sum(inds[:,0] == gt)
+            top_5 += np.sum([gt[i] in inds[i] for i in range(lim)])
     print 'Top-1 Accuracy = {:.2f}'.format(top_1/500.0)
     print 'Top-5 Accuracy = {:.2f}'.format(top_5/500.0)
-
+    print 'Time taken: {:.2f}s'.format(time.time()-t_s)
+    
 def predict(net, im_path, in_im, net_name):
     synset = open('misc/ilsvrc_synsets.txt').readlines()
     config = tf.ConfigProto(gpu_options=tf.GPUOptions(allow_growth=True))
+    t_s = time.time()
+    isotropic,size = get_params(net_name)
     with tf.Session(config=config) as sess:
         sess.run(tf.global_variables_initializer())
-        if net_name=='caffenet':
-                im = img_preprocess(im_path, size=227)
-        elif net_name == 'inceptionv3':
-                im = v3_preprocess(im_path)
-        else:
-                im = img_preprocess(im_path)
+        img_loader = loader_func(net_name,isotropic,size,sess)
+        im = img_loader(im_path.strip())
+        im = np.reshape(im,[1,size,size,3])
         softmax_scores = sess.run(net['prob'], feed_dict={in_im: im})
         inds = np.argsort(softmax_scores[0])[::-1][:5]
         print '{:}\t{:}'.format('Score','Class')
@@ -96,11 +98,16 @@ def main():
     parser.add_argument('--evaluate', default=False,  help='Flag to evaluate over full validation set')
     parser.add_argument('--img_list',  help='Path to the validation image list')
     parser.add_argument('--gt_labels', help='Path to the ground truth validation labels')
+    parser.add_argument('--batch_size', default=50,  help='Batch size for evaluation code')
     args = parser.parse_args()
+    args.network = 'vgg16'
+    args.img_list = '/data1/data/imagenet/data/val_names_list.txt'
+    args.gt_labels = '/data1/data/imagenet/data/val_gt_list.txt' 
+    # args.evaluate = True
     validate_arguments(args)
     net, inp_im  = choose_net(args.network)
     if args.evaluate:
-        evaluate(net, args.img_list, inp_im, args.gt_labels, args.network)
+        evaluate(net, args.img_list, inp_im, args.gt_labels, args.network,args.batch_size)
     else:
         predict(net, args.img_path, inp_im, args.network)
 
