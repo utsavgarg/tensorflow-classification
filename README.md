@@ -18,8 +18,6 @@ Different neural network architechtures implemented in tensorflow for image clas
 These converted models have the following performance on the ilsvrc validation set, with each image resized to 224x224 (227 or 299 depending on architechture), and per channel mean subtraction.
 
 
-* **post preprocessing update**. 
-
 | Network        | Top-1 Accuracy           | Top-5 Accuracy  |
 | ------------- |:-------------:| :-----:|
 | VGG-F      | 58.33% | 80.75% |
